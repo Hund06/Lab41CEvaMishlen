@@ -1,0 +1,6 @@
+# requirements_api.txt
+# Зависимости для REST API (дополнительно к requirements.txt)
+
+Flask>=2.3.0
+Flask-CORS>=4.0.0
+python-dotenv>=1.0.0

@@ -31,7 +31,6 @@ def get_stylesheet():
     QLabel#h2 {{ font-family: "{FONT_HEAD}"; font-size: 24px; font-weight: 500; color: {ACCENT_DARK}; }}
     QLabel#h3 {{ font-family: "{FONT_HEAD}"; font-size: 17px; font-weight: 500; color: {ACCENT_DARK}; }}
     QLabel#muted {{ color: {MUTED}; font-size: 12px; }}
-    QLabel#price {{ font-size: 17px; font-weight: 600; color: {ACCENT_DARK}; }}
     QLabel#total {{ font-family: "{FONT_HEAD}"; font-size: 40px; font-weight: 700; color: {ACCENT_DARK}; }}
 
     /* Фоны экранов */

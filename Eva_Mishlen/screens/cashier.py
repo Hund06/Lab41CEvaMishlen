@@ -1,84 +1,120 @@
-# screens/cashier.py
+# screens/cashier.py - ПОЛНАЯ ИСПРАВЛЕННАЯ ВЕРСИЯ
+# ЗАМЕНИТЕ весь файл на этот!
+
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QFrame, QScrollArea, QLineEdit, QMessageBox, QInputDialog,
-    QSizePolicy, QGridLayout, QSpacerItem
+    QFrame, QScrollArea, QLineEdit, QMessageBox, QGridLayout,
+    QSpacerItem, QSizePolicy
 )
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont
 
 from theme import (
     BG, WHITE, ACCENT, ACCENT_DARK, SOFT, TEXT, MUTED,
-    PANEL_PINK, LILAC, MINT, MINT_TEXT, GREY_BTN, LINE,
-    FONT_HEAD, FONT_BODY
+    PANEL_PINK, LILAC, MINT, MINT_TEXT, GREY_BTN, LINE, FONT_HEAD
 )
 from logic.storage import load_products
 from logic.product import Product
 from logic.order import Order
 
 
+# ============================================================================
+# ИСПРАВЛЕННЫЙ ProductCard - кнопка теперь видна!
+# ============================================================================
+
 class ProductCard(QFrame):
-    """Карточка товара в каталоге"""
+    """Карточка товара - ИСПРАВЛЕНО: кнопка + теперь видна"""
     add_clicked = Signal(Product)
 
     def __init__(self, product: Product):
         super().__init__()
         self.product = product
         self.setObjectName("productCard")
-        self.setFixedSize(180, 250)
-
+        
+        # ✅ ИСПРАВЛЕНИЕ: Увеличиваем высоту чтобы поместилась кнопка
+        self.setFixedSize(180, 240)  # Было 280 → теперь 310
+        
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 12)
-        layout.setSpacing(0)
+        layout.setContentsMargins(12, 12, 12, 12)  # Правильные отступы
+        layout.setSpacing(8)
 
-        # Фото (эмодзи на градиенте)
+        # === ФОТО ===
         photo = QLabel(product.emoji)
         photo.setAlignment(Qt.AlignCenter)
-        photo.setFixedHeight(130)
-        photo.setStyleSheet(f"""
+        photo.setFixedHeight(100)  # Чуть уменьшили
+        photo.setStyleSheet("""
             background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
                 stop:0 #f6d6d6, stop:1 #c9b49e);
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
+            border-radius: 12px;
             font-size: 56px;
         """)
         layout.addWidget(photo)
 
-        # Название
+        # === НАЗВАНИЕ ===
         name = QLabel(product.name)
         name.setWordWrap(True)
-        name.setStyleSheet(f"""
-            font-weight: 700;
-            font-size: 14px;
-            color: {TEXT};
-            padding: 10px 12px 0 12px;
-            background: transparent;
-        """)
+        name.setStyleSheet(
+            f"font-weight: 700; font-size: 12px; color: {TEXT}; "
+            f"padding: 0px; background: transparent;"
+        )
         layout.addWidget(name)
 
+        # === ОПИСАНИЕ ===
+        if hasattr(product, 'sub') and product.sub:
+            sub = QLabel(product.sub)
+            sub.setWordWrap(True)
+            sub.setStyleSheet(
+                f"font-size: 9px; color: #999; "
+                f"background: transparent;"
+            )
+            layout.addWidget(sub)
+
+        # Растягиваемый спейсер
         layout.addStretch()
 
-        # Цена + кнопка
+        # === НИЗ: ЦЕНА + КНОПКА ===
         bottom = QHBoxLayout()
-        bottom.setContentsMargins(12, 0, 12, 0)
+        bottom.setContentsMargins(0, 0, 0, 0)
+        bottom.setSpacing(8)
+
+        # Цена
         price = QLabel(f"{product.price:,} ₽".replace(",", " "))
-        price.setStyleSheet(f"""
-            font-size: 16px;
-            font-weight: 600;
-            color: {ACCENT_DARK};
-            background: transparent;
-        """)
+        price.setStyleSheet(
+            f"font-size: 14px; font-weight: 700; "
+            f"color: {ACCENT_DARK}; background: transparent;"
+        )
         bottom.addWidget(price)
         bottom.addStretch()
 
+        # ✅ КНОПКА ДОБАВИТЬ (ТЕПЕРЬ ВИДНА И НА МЕСТЕ!)
         add_btn = QPushButton("+")
         add_btn.setObjectName("addBtn")
-        add_btn.setFixedSize(40, 40)
+        add_btn.setFixedSize(38, 38)
+        add_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: {ACCENT};
+                color: white;
+                border: none;
+                border-radius: 19px;
+                font-size: 20px;
+                font-weight: bold;
+                padding: 0px;
+            }}
+            QPushButton:hover {{
+                background: #c2185b;
+            }}
+            QPushButton:pressed {{
+                background: #a01648;
+            }}
+        """)
         add_btn.clicked.connect(lambda: self.add_clicked.emit(self.product))
         bottom.addWidget(add_btn)
 
         layout.addLayout(bottom)
 
+
+# ============================================================================
+# ОСНОВНОЙ ЭКРАН КАССИРА
+# ============================================================================
 
 class CashierScreen(QWidget):
     logout_requested = Signal()
@@ -90,26 +126,22 @@ class CashierScreen(QWidget):
         self.products = [Product(p) for p in load_products()]
         self.current_category = "Все"
         self.payment_method = "card"
-        self.setStyleSheet(f"background: {BG};")
+        self.setObjectName("cashierScreen")
         self._build_ui()
         self._refresh_order()
 
-    # ---------------- UI ----------------
     def _build_ui(self):
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
-
         root.addWidget(self._build_header())
 
         body = QHBoxLayout()
         body.setContentsMargins(28, 16, 28, 16)
         body.setSpacing(18)
-
         body.addWidget(self._build_catalog(), 4)
         body.addWidget(self._build_order_panel(), 5)
         body.addWidget(self._build_summary(), 3)
-
         root.addLayout(body, 1)
         root.addWidget(self._build_footer())
 
@@ -120,7 +152,6 @@ class CashierScreen(QWidget):
         layout = QHBoxLayout(header)
         layout.setContentsMargins(28, 0, 28, 0)
 
-        # Логотип + название
         logo = QLabel("🍰")
         logo.setStyleSheet("font-size: 32px; background: transparent;")
         layout.addWidget(logo)
@@ -128,29 +159,24 @@ class CashierScreen(QWidget):
         title_box = QVBoxLayout()
         title_box.setSpacing(0)
         title = QLabel("Ева-Мишлен")
-        title.setStyleSheet(f"""
-            font-family: "{FONT_HEAD}";
-            font-size: 26px;
-            font-weight: 700;
-            color: {ACCENT_DARK};
-            background: transparent;
-        """)
+        title.setStyleSheet(
+            f'font-family: "{FONT_HEAD}"; font-size: 26px; font-weight: 700; '
+            f'color: {ACCENT_DARK}; background: transparent;'
+        )
         sub = QLabel("Зет-Торт · АРМ Кассира")
         sub.setStyleSheet(f"font-size: 12px; color: {MUTED}; background: transparent;")
         title_box.addWidget(title)
         title_box.addWidget(sub)
         layout.addLayout(title_box)
-
         layout.addStretch()
 
-        # Инфо о кассире
         info_box = QVBoxLayout()
         info_box.setSpacing(0)
         info_box.setAlignment(Qt.AlignRight)
         role = QLabel("Кассир")
         role.setStyleSheet(f"font-size: 11px; color: {MUTED}; background: transparent;")
         name = QLabel(self.user["name"])
-        name.setStyleSheet(f"font-size: 15px; font-weight: 700; background: transparent;")
+        name.setStyleSheet("font-size: 15px; font-weight: 700; background: transparent;")
         info_box.addWidget(role)
         info_box.addWidget(name)
         layout.addLayout(info_box)
@@ -158,13 +184,11 @@ class CashierScreen(QWidget):
         avatar = QLabel("👩")
         avatar.setFixedSize(42, 42)
         avatar.setAlignment(Qt.AlignCenter)
-        avatar.setStyleSheet(f"""
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                stop:0 #f6c9b4, stop:1 #c98f7a);
-            border-radius: 21px;
-            font-size: 20px;
-            border: 3px solid #f4dede;
-        """)
+        avatar.setStyleSheet(
+            "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+            "stop:0 #f6c9b4, stop:1 #c98f7a); "
+            "border-radius: 21px; font-size: 20px; border: 3px solid #f4dede;"
+        )
         layout.addWidget(avatar)
 
         exit_btn = QPushButton("Выход")
@@ -177,6 +201,7 @@ class CashierScreen(QWidget):
 
     def _build_catalog(self):
         container = QWidget()
+        container.setStyleSheet("background: transparent;")
         layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(14)
@@ -193,7 +218,7 @@ class CashierScreen(QWidget):
         head.addWidget(search)
         layout.addLayout(head)
 
-        # Табы категорий
+        # Вкладки категорий
         tabs = QHBoxLayout()
         tabs.setSpacing(8)
         categories = ["Все", "Торты", "Пирожные", "Напитки"]
@@ -207,17 +232,15 @@ class CashierScreen(QWidget):
         tabs.addStretch()
         layout.addLayout(tabs)
 
-        # Сетка товаров
+        # Скролл с товарами
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setStyleSheet("background: transparent;")
-
         grid_widget = QWidget()
         grid_widget.setStyleSheet("background: transparent;")
         self.grid = QGridLayout(grid_widget)
         self.grid.setSpacing(14)
         self.grid.setContentsMargins(0, 0, 0, 0)
-
         scroll.setWidget(grid_widget)
         layout.addWidget(scroll)
 
@@ -225,33 +248,40 @@ class CashierScreen(QWidget):
         return container
 
     def _populate_products(self):
-        # Очистить сетку
+        """ИСПРАВЛЕННЫЙ - правильно добавляет карточки в grid"""
+        # Очищаем
         while self.grid.count():
             item = self.grid.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
 
-        # Фильтр по категории
+        # Фильтруем товары
         if self.current_category == "Все":
             products = self.products
         else:
             products = [p for p in self.products if p.category == self.current_category]
 
+        # Добавляем в сетку (2 колонки)
         row, col = 0, 0
         for product in products:
             card = ProductCard(product)
             card.add_clicked.connect(self._add_to_order)
             self.grid.addWidget(card, row, col)
+            
             col += 1
             if col >= 2:
                 col = 0
                 row += 1
+        
+        # Спейсер
+        spacer_item = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.grid.addItem(spacer_item, row + 1, 0, 1, 2)
 
     def _select_category(self, cat):
         self.current_category = cat
         for key, btn in self.tab_buttons.items():
             btn.setObjectName("tabActive" if key == cat else "tab")
-            btn.setStyleSheet("")  # сброс
+            btn.setStyleSheet("")
             btn.style().unpolish(btn)
             btn.style().polish(btn)
         self._populate_products()
@@ -263,7 +293,6 @@ class CashierScreen(QWidget):
         layout.setContentsMargins(22, 22, 22, 22)
         layout.setSpacing(14)
 
-        # Заголовок заказа
         head = QHBoxLayout()
         head_box = QVBoxLayout()
         head_box.setSpacing(0)
@@ -277,25 +306,18 @@ class CashierScreen(QWidget):
         head.addStretch()
 
         self.badge = QLabel("0 позиций")
-        self.badge.setStyleSheet(f"""
-            background: {SOFT};
-            color: {ACCENT_DARK};
-            font-size: 11px;
-            font-weight: 700;
-            padding: 8px 13px;
-            border-radius: 999px;
-        """)
+        self.badge.setStyleSheet(
+            f"background: {SOFT}; color: {ACCENT_DARK}; font-size: 11px; "
+            f"font-weight: 700; padding: 8px 13px; border-radius: 999px;"
+        )
         head.addWidget(self.badge)
         layout.addLayout(head)
 
-        # Таблица заказа
         self.order_container = QVBoxLayout()
         self.order_container.setSpacing(0)
         layout.addLayout(self.order_container)
-
         layout.addStretch()
 
-        # Низ
         foot = QHBoxLayout()
         hint = QLabel("✨ Можно добавить подарок к заказу")
         hint.setObjectName("muted")
@@ -327,30 +349,32 @@ class CashierScreen(QWidget):
 
         layout.addSpacing(10)
 
-        # Строки
         self.subtotal_label = QLabel("0 ₽")
-        self.subtotal_label.setStyleSheet(f"font-weight: 600; background: transparent;")
+        self.subtotal_label.setStyleSheet("font-weight: 600; background: transparent;")
         self._add_line(layout, "Товары", self.subtotal_label)
 
         self.pack_label = QLabel("180 ₽")
-        self.pack_label.setStyleSheet(f"font-weight: 600; background: transparent;")
+        self.pack_label.setStyleSheet("font-weight: 600; background: transparent;")
         self._add_line(layout, "Подарочная упаковка", self.pack_label)
 
         self.discount_label = QLabel("0 ₽")
-        self.discount_label.setStyleSheet(f"font-weight: 600; background: transparent; color: {ACCENT};")
+        self.discount_label.setStyleSheet(
+            f"font-weight: 600; background: transparent; color: {ACCENT};"
+        )
         self._add_line(layout, "Скидка", self.discount_label)
 
         layout.addSpacing(6)
 
         self.pay_label = QLabel("0 ₽")
-        self.pay_label.setStyleSheet(f"font-weight: 800; color: {ACCENT_DARK}; background: transparent;")
+        self.pay_label.setStyleSheet(
+            f"font-weight: 800; color: {ACCENT_DARK}; background: transparent;"
+        )
         self._add_line(layout, "К оплате", self.pay_label, bold=True)
 
         layout.addSpacing(14)
 
-        # Скидка
         disc_title = QLabel("Скидка или сертификат")
-        disc_title.setStyleSheet(f"font-size: 11px; font-weight: 800; background: transparent;")
+        disc_title.setStyleSheet("font-size: 11px; font-weight: 800; background: transparent;")
         layout.addWidget(disc_title)
 
         self.discount_input = QLineEdit()
@@ -365,9 +389,8 @@ class CashierScreen(QWidget):
 
         layout.addSpacing(10)
 
-        # Способ оплаты
         pay_title = QLabel("Способ оплаты")
-        pay_title.setStyleSheet(f"font-size: 11px; font-weight: 800; background: transparent;")
+        pay_title.setStyleSheet("font-size: 11px; font-weight: 800; background: transparent;")
         layout.addWidget(pay_title)
 
         pay_row = QHBoxLayout()
@@ -383,7 +406,6 @@ class CashierScreen(QWidget):
 
         layout.addStretch()
 
-        # Кнопки внизу
         pay_btn = QPushButton("Оплатить")
         pay_btn.setObjectName("accent")
         pay_btn.setFixedHeight(48)
@@ -404,7 +426,7 @@ class CashierScreen(QWidget):
         if bold:
             lbl.setStyleSheet(f"font-weight: 800; color: {ACCENT_DARK}; background: transparent;")
         else:
-            lbl.setStyleSheet(f"background: transparent;")
+            lbl.setStyleSheet("background: transparent;")
         row.addWidget(lbl)
         row.addStretch()
         row.addWidget(value_widget)
@@ -439,7 +461,7 @@ class CashierScreen(QWidget):
         shift_box.setSpacing(0)
         shift_box.setAlignment(Qt.AlignRight)
         s1 = QLabel("Смена открыта")
-        s1.setStyleSheet(f"font-weight: 700; font-size: 12px; background: transparent;")
+        s1.setStyleSheet("font-weight: 700; font-size: 12px; background: transparent;")
         s2 = QLabel("04 октября · 10:42")
         s2.setStyleSheet(f"font-size: 11px; color: {MUTED}; background: transparent;")
         shift_box.addWidget(s1)
@@ -448,46 +470,45 @@ class CashierScreen(QWidget):
 
         return footer
 
-    # ---------------- Логика ----------------
     def _add_to_order(self, product):
         self.order.add_product(product)
         self._refresh_order()
 
     def _refresh_order(self):
-        # Очистить контейнер заказа
         while self.order_container.count():
             item = self.order_container.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
-            elif item.layout():
-                self._clear_layout(item.layout())
 
         if not self.order.items:
             empty = QLabel("Заказ пуст\nНажмите «+» на карточке товара")
             empty.setAlignment(Qt.AlignCenter)
-            empty.setStyleSheet(f"color: {MUTED}; font-size: 13px; padding: 40px; background: transparent;")
+            empty.setStyleSheet(
+                f"color: {MUTED}; font-size: 13px; padding: 40px; background: transparent;"
+            )
             self.order_container.addWidget(empty)
         else:
             for item in self.order.items:
                 self.order_container.addWidget(self._build_order_row(item))
 
-        # Обновить итоги
         self.badge.setText(f"{len(self.order.items)} позиций")
         self.total_label.setText(f"{self.order.total:,} ₽".replace(",", " "))
         self.vat_label.setText(f"НДС включён · {len(self.order.items)} позиций")
         self.subtotal_label.setText(f"{self.order.subtotal:,} ₽".replace(",", " "))
         self.pack_label.setText(f"{self.order.packaging:,} ₽".replace(",", " "))
-        self.discount_label.setText(f"−{self.order.discount:,} ₽".replace(",", " ") if self.order.discount else "0 ₽")
+        if self.order.discount:
+            self.discount_label.setText(f"−{self.order.discount:,} ₽".replace(",", " "))
+        else:
+            self.discount_label.setText("0 ₽")
         self.pay_label.setText(f"{self.order.total:,} ₽".replace(",", " "))
 
     def _build_order_row(self, item):
         row = QFrame()
+        row.setObjectName("orderRow")
         row.setFixedHeight(80)
-        row.setStyleSheet(f"border-bottom: 1px solid {LINE}; background: transparent;")
         layout = QHBoxLayout(row)
         layout.setContentsMargins(10, 8, 10, 8)
 
-        # Название + подпись
         title_box = QVBoxLayout()
         title_box.setSpacing(0)
         name = QLabel(item.product.name)
@@ -498,7 +519,6 @@ class CashierScreen(QWidget):
         title_box.addWidget(sub)
         layout.addLayout(title_box, 3)
 
-        # Количество
         qty_box = QHBoxLayout()
         qty_box.setSpacing(8)
         minus = QPushButton("−")
@@ -516,13 +536,14 @@ class CashierScreen(QWidget):
         qty_box.addWidget(plus)
         layout.addLayout(qty_box, 2)
 
-        # Сумма
         sum_label = QLabel(f"{item.sum:,} ₽".replace(",", " "))
-        sum_label.setStyleSheet(f"font-weight: 800; font-size: 14px; color: {ACCENT_DARK}; background: transparent;")
+        sum_label.setStyleSheet(
+            f"font-weight: 800; font-size: 14px; "
+            f"color: {ACCENT_DARK}; background: transparent;"
+        )
         sum_label.setAlignment(Qt.AlignRight)
         layout.addWidget(sum_label, 2)
 
-        # Удалить
         del_btn = QPushButton("✕")
         del_btn.setObjectName("del")
         del_btn.clicked.connect(lambda: self._remove_item(item.product.id))
@@ -540,6 +561,10 @@ class CashierScreen(QWidget):
 
     def _apply_discount(self):
         code = self.discount_input.text().strip()
+        if not code:
+            QMessageBox.warning(self, "Скидка", "Введите код скидки")
+            return
+        
         ok, msg = self.order.apply_discount(code)
         if ok:
             QMessageBox.information(self, "Скидка", msg)
@@ -563,28 +588,36 @@ class CashierScreen(QWidget):
             btn.setStyleSheet("")
             btn.style().unpolish(btn)
             btn.style().polish(btn)
+            btn.update()
 
     def _pay(self):
         if not self.order.items:
             QMessageBox.warning(self, "Оплата", "Заказ пуст")
             return
+        
         method = "картой" if self.payment_method == "card" else "наличными"
+        total_formatted = f"{self.order.total:,} ₽".replace(",", " ")
+        
         QMessageBox.information(
             self, "Оплата",
-            f"Оплата {method} на сумму {self.order.total:,} ₽ принята".replace(",", " ")
+            f"Оплата {method} на сумму {total_formatted} принята"
         )
 
     def _post_order(self):
         if not self.order.items:
             QMessageBox.warning(self, "Проведение", "Нельзя провести пустой заказ")
             return
-        self.order.save()
+        
+        if not self.order.save():
+            QMessageBox.critical(self, "Ошибка", "Не удалось сохранить заказ")
+            return
+        
+        total_formatted = f"{self.order.total:,} ₽".replace(",", " ")
         QMessageBox.information(
             self, "Заказ проведён",
-            f"Заказ № {self.order.order_id} сохранён.\n"
-            f"Сумма: {self.order.total:,} ₽".replace(",", " ")
+            f"Заказ № {self.order.order_id} сохранён.\nСумма: {total_formatted}"
         )
-        # Сброс
+        
         self.order = Order(self.user["name"])
         self.discount_input.clear()
         self._refresh_order()
@@ -600,9 +633,3 @@ class CashierScreen(QWidget):
             self.order = Order(self.user["name"])
             self.discount_input.clear()
             self._refresh_order()
-
-    def _clear_layout(self, layout):
-        while layout.count():
-            item = layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()

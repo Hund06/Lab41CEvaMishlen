@@ -1,1 +1,162 @@
-[]
+[
+  {
+    "order_id": "00001",
+    "cashier": "Анна Смирнова",
+    "created_at": "2026-10-05T00:58:59",
+    "items": [
+      {
+        "product_id": 1,
+        "name": "Клубничное облако",
+        "qty": 1,
+        "price": 1890,
+        "sum": 1890
+      },
+      {
+        "product_id": 2,
+        "name": "Малиновый мусс",
+        "qty": 2,
+        "price": 1590,
+        "sum": 3180
+      }
+    ],
+    "subtotal": 5070,
+    "packaging": 180,
+    "discount": 0,
+    "total": 5250,
+    "payment_method": "card"
+  },
+  {
+    "order_id": "00002",
+    "cashier": "Анна Смирнова",
+    "created_at": "2026-10-05T01:01:18",
+    "items": [
+      {
+        "product_id": 4,
+        "name": "Капкейк ванильный",
+        "qty": 2,
+        "price": 320,
+        "sum": 640
+      },
+      {
+        "product_id": 6,
+        "name": "Эклер шоколадный",
+        "qty": 1,
+        "price": 250,
+        "sum": 250
+      }
+    ],
+    "subtotal": 890,
+    "packaging": 180,
+    "discount": 0,
+    "total": 1070,
+    "payment_method": "cash"
+  },
+  {
+    "order_id": "00003",
+    "cashier": "Анна Смирнова",
+    "created_at": "2026-10-05T09:43:12",
+    "items": [
+      {
+        "product_id": 2,
+        "name": "Малиновый мусс",
+        "qty": 1,
+        "price": 1590,
+        "sum": 1590
+      },
+      {
+        "product_id": 4,
+        "name": "Капкейк ванильный",
+        "qty": 2,
+        "price": 320,
+        "sum": 640
+      },
+      {
+        "product_id": 6,
+        "name": "Эклер шоколадный",
+        "qty": 1,
+        "price": 250,
+        "sum": 250
+      },
+      {
+        "product_id": 3,
+        "name": "Макарон ассорти",
+        "qty": 2,
+        "price": 690,
+        "sum": 1380
+      },
+      {
+        "product_id": 8,
+        "name": "Чай с бергамотом",
+        "qty": 1,
+        "price": 190,
+        "sum": 190
+      },
+      {
+        "product_id": 7,
+        "name": "Капучино",
+        "qty": 1,
+        "price": 290,
+        "sum": 290
+      }
+    ],
+    "subtotal": 4340,
+    "packaging": 180,
+    "discount": 0,
+    "total": 4520,
+    "payment_method": "card"
+  },
+  {
+    "order_id": "00004",
+    "cashier": "Анна Смирнова",
+    "created_at": "2026-10-05T09:48:52",
+    "items": [
+      {
+        "product_id": 2,
+        "name": "Малиновый мусс",
+        "qty": 1,
+        "price": 1590,
+        "sum": 1590
+      },
+      {
+        "product_id": 1,
+        "name": "Клубничное облако",
+        "qty": 1,
+        "price": 1890,
+        "sum": 1890
+      },
+      {
+        "product_id": 4,
+        "name": "Капкейк ванильный",
+        "qty": 1,
+        "price": 320,
+        "sum": 320
+      },
+      {
+        "product_id": 3,
+        "name": "Макарон ассорти",
+        "qty": 1,
+        "price": 690,
+        "sum": 690
+      },
+      {
+        "product_id": 5,
+        "name": "Чизкейк Нью-Йорк",
+        "qty": 1,
+        "price": 1750,
+        "sum": 1750
+      },
+      {
+        "product_id": 6,
+        "name": "Эклер шоколадный",
+        "qty": 1,
+        "price": 250,
+        "sum": 250
+      }
+    ],
+    "subtotal": 6490,
+    "packaging": 180,
+    "discount": 0,
+    "total": 6670,
+    "payment_method": "card"
+  }
+]
